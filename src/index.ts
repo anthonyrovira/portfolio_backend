@@ -7,9 +7,13 @@ import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { zValidator } from "@hono/zod-validator";
 import { cors } from "hono/cors";
-import { ratelimit } from "./middlewares/rateLimiter.js";
-import { createMessage, getMessages } from "./handlers/messages.js";
 import { securityHeaders } from "./shared/middleware/security.js";
+import { db } from "./config/firebase.js";
+import { ratelimit } from "./shared/middleware/rateLimiter.js";
+import { MessageService } from "./features/messages/message.service.js";
+import { EmailService } from "./features/messages/email.service.js";
+import { MessageController } from "./features/messages/message.controller.js";
+import { env } from "./config/env.js";
 
 const app = new Hono({
   strict: false,
@@ -22,7 +26,7 @@ app.use("*", securityHeaders);
 app.use(
   "/api/*",
   cors({
-    origin: process.env.ALLOWED_ORIGIN || "*",
+    origin: env.ALLOWED_ORIGIN,
     allowMethods: ["POST", "GET"],
   })
   // apiKeyAuth
@@ -35,35 +39,18 @@ const contactSchema = z.object({
   message: z.string().min(10, "Message must be at least 10 characters long"),
 });
 
+// Initialize services
+const resend = new Resend(env.RESEND_API_KEY);
+const messageService = new MessageService(db, new EmailService());
+const messageController = new MessageController(messageService);
+
 // Main route
-app.post(
-  "/api/messages",
-  ratelimit({ limit: 5, timeframe: "1h" }),
-  zValidator("json", contactSchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ errors: result.error }, 400);
-    }
-  }),
-  async (c) => {
-    try {
-      const data = await c.req.json();
-      await createMessage(data);
-      return c.json({ success: true }, 200);
-    } catch (error) {
-      return c.json({ error: "Server error" }, 500);
-    }
-  }
+app.post("/api/messages", ratelimit({ limit: 5, timeframe: "1h" }), zValidator("json", contactSchema), (c) =>
+  messageController.createMessage(c)
 );
 
 // Admin route (optional)
-app.get("/api/messages", async (c) => {
-  try {
-    const messages = await getMessages();
-    return c.json(messages, 200);
-  } catch (error) {
-    return c.json({ error: "Access denied" }, 403);
-  }
-});
+app.get("/api/messages", (c) => messageController.getMessages(c));
 
 // Error handling
 app.onError((err, c) => {
