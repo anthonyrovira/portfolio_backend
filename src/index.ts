@@ -9,12 +9,14 @@ import { zValidator } from "@hono/zod-validator";
 import { cors } from "hono/cors";
 import { ratelimit } from "./middlewares/rateLimiter.js";
 import { createMessage, getMessages } from "./handlers/messages.js";
+import { securityHeaders } from "./shared/middleware/security.js";
 
 const app = new Hono({
   strict: false,
 });
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Apply security headers globally
+app.use("*", securityHeaders);
 
 // CORS Middleware
 app.use(
@@ -22,14 +24,8 @@ app.use(
   cors({
     origin: process.env.ALLOWED_ORIGIN || "*",
     allowMethods: ["POST", "GET"],
-  }),
-  async (c, next) => {
-    const secret = c.req.header("X-Api-Secret");
-    if (secret !== process.env.API_SECRET) {
-      return c.json({ error: "Unauthorized" }, 401);
-    }
-    await next();
-  }
+  })
+  // apiKeyAuth
 );
 
 // Zod validation schema
