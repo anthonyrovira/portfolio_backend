@@ -1,19 +1,18 @@
-// src/server.ts
 import { Hono } from "hono";
 import "dotenv/config";
 import { z } from "zod";
-import { Resend } from "resend";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { zValidator } from "@hono/zod-validator";
 import { cors } from "hono/cors";
 import { securityHeaders } from "./shared/middleware/security.js";
-import { db } from "./config/firebase.js";
+import { db } from "./core/config/firebase.js";
 import { ratelimit } from "./shared/middleware/rateLimiter.js";
 import { MessageService } from "./features/messages/message.service.js";
-import { EmailService } from "./features/messages/email.service.js";
+import { EmailService } from "./features/emails/email.service.js";
 import { MessageController } from "./features/messages/message.controller.js";
-import { env } from "./config/env.js";
+import { EmailController } from "./features/emails/email.controller.js";
+import { env } from "./core/config/env.js";
 
 const app = new Hono({
   strict: false,
@@ -29,7 +28,6 @@ app.use(
     origin: env.ALLOWED_ORIGIN,
     allowMethods: ["POST", "GET"],
   })
-  // apiKeyAuth
 );
 
 // Zod validation schema
@@ -40,17 +38,20 @@ const contactSchema = z.object({
 });
 
 // Initialize services
-const resend = new Resend(env.RESEND_API_KEY);
-const messageService = new MessageService(db, new EmailService());
+const emailService = new EmailService();
+const emailController = new EmailController(emailService);
+const messageService = new MessageService(db, emailService);
 const messageController = new MessageController(messageService);
 
-// Main route
+// Main routes
 app.post("/api/messages", ratelimit({ limit: 5, timeframe: "1h" }), zValidator("json", contactSchema), (c) =>
   messageController.createMessage(c)
 );
 
-// Admin route (optional)
 app.get("/api/messages", (c) => messageController.getMessages(c));
+
+// Email test route
+app.post("/api/test/email", (c) => emailController.testEmail(c));
 
 // Error handling
 app.onError((err, c) => {
