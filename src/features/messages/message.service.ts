@@ -14,6 +14,8 @@ export class MessageService {
 
   async createMessage(data: ContactForm): Promise<MessageResponse> {
     try {
+      console.log({ data });
+
       const docRef = await this.saveToDatabase(data);
 
       await this.emailService.sendNotificationEmail(data, docRef.id);
