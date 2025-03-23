@@ -52,6 +52,10 @@ app.get("/api/messages", (c) => messageController.getMessages(c));
 // Email test route
 app.post("/api/test/email", (c) => emailController.testEmail(c));
 
+app.get("/health", (c) => {
+  return c.json({ status: "OK" }, 200);
+});
+
 // Error handling
 app.onError((err, c) => {
   console.error(err);
