@@ -34,21 +34,32 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Deploy to EC2
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: portfolio-backend
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          echo "$EC2_SSH_KEY" > private_key.pem
-          chmod 400 private_key.pem
-          ssh -o StrictHostKeyChecking=no -i private_key.pem $EC2_USER@$EC2_HOST << 'EOF'
-            export API_KEY="$API_KEY"
-            aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin $ECR_REGISTRY
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker stop portfolio-backend || true
+            docker rm portfolio-backend || true
+
+            echo "UPSTASH_REDIS_REST_URL=${{ secrets.UPSTASH_REDIS_REST_URL }}" > .env
+            echo "UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }}" >> .env
+            echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
+            echo "FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }}" >> .env
+            echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env
+            echo "FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }}" >> .env
+            echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}" >> .env
+            echo "FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}" >> .env
+            echo "FIREBASE_MEASUREMENT_ID=${{ secrets.FIREBASE_MEASUREMENT_ID }}" >> .env
+            echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> .env
+            echo "RESEND_FROM_EMAIL=${{ secrets.RESEND_FROM_EMAIL }}" >> .env
+
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-            docker stop backend-container || true
-            docker rm backend-container || true
-            docker run -d --name backend-container -p 3000:3000 -e $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          EOF
+            docker run -d \
+              --name portfolio-backend \
+              -p 3000:3000 \
+              --env-file .env \  # Utilisation du fichier .env
+              $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
