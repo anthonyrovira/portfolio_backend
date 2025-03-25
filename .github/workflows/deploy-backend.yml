@@ -3,6 +3,12 @@ name: Deploy Backend
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -30,7 +36,8 @@ jobs:
           ECR_REPOSITORY: portfolio-backend
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker-compose build --no-cache
+          docker tag portfolio-backend:latest $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Deploy to EC2
@@ -40,9 +47,6 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker stop portfolio-backend || true
-            docker rm portfolio-backend || true
-
             echo "UPSTASH_REDIS_REST_URL=${{ secrets.UPSTASH_REDIS_REST_URL }}" > .env
             echo "UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }}" >> .env
             echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
@@ -55,11 +59,10 @@ jobs:
             echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> .env
             echo "RESEND_FROM_EMAIL=${{ secrets.RESEND_FROM_EMAIL }}" >> .env
 
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+            docker-compose down || true
+
+            curl -o docker-compose.yml https://raw.githubusercontent.com/anthonyrovira/portfolio_backend/main/docker-compose.yml
 
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-            docker run -d \
-              --name portfolio-backend \
-              -p 3000:3000 \
-              --env-file .env \  # Utilisation du fichier .env
-              $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+            docker-compose up -d
