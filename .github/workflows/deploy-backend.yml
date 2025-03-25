@@ -83,6 +83,8 @@ jobs:
             echo "ECR_REPOSITORY=portfolio-backend" >> .env
             echo "IMAGE_TAG=${{ github.sha }}" >> .env
 
+            curl -O https://raw.githubusercontent.com/.../docker-compose.yml
+
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
             docker-compose down || true
