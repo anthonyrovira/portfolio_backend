@@ -52,7 +52,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu || exit
+            cd /home/ubuntu/app || exit
             echo "UPSTASH_REDIS_REST_URL=${{ secrets.UPSTASH_REDIS_REST_URL }}" > .env
             echo "UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }}" >> .env
             echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
