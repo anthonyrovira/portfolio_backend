@@ -53,6 +53,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/app || exit
+
+            docker-compose down || true
+
+            git clone https://github.com/anthonyrovira/portfolio_backend.git .
+
             echo "UPSTASH_REDIS_REST_URL=${{ secrets.UPSTASH_REDIS_REST_URL }}" > .env
             echo "UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }}" >> .env
             echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
@@ -67,10 +72,6 @@ jobs:
             echo "ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}" >> .env
             echo "ECR_REPOSITORY=portfolio-backend" >> .env
             echo "IMAGE_TAG=${{ github.sha }}" >> .env
-
-            docker-compose down || true
-
-            git clone https://github.com/anthonyrovira/portfolio_backend.git .
 
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
