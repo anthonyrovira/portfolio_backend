@@ -68,8 +68,6 @@ jobs:
 
             cd /home/ubuntu/app || exit
 
-            docker-compose down || true
-
             echo "UPSTASH_REDIS_REST_URL=${{ secrets.UPSTASH_REDIS_REST_URL }}" > .env
             echo "UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }}" >> .env
             echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
@@ -85,8 +83,8 @@ jobs:
             echo "ECR_REPOSITORY=portfolio-backend" >> .env
             echo "IMAGE_TAG=${{ github.sha }}" >> .env
 
-            aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REGISTRY
-
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+            docker-compose down || true
 
             docker-compose up -d --no-build
