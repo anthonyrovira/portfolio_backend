@@ -1,6 +1,7 @@
 services:
   backend:
     container_name: portfolio-backend
+    image: portfolio-backend:latest
     build:
       context: .
       dockerfile: Dockerfile
