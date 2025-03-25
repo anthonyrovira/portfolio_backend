@@ -67,11 +67,11 @@ jobs:
 
             cd /home/ubuntu/app || exit
 
-            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ecr_registry
 
             docker-compose down || true
 
-            git clone https://github.com/anthonyrovira/portfolio_backend.git .
+            curl -O https://raw.githubusercontent.com/anthonyrovira/portfolio_backend/main/docker-compose.yml
 
             echo "UPSTASH_REDIS_REST_URL=${{ secrets.UPSTASH_REDIS_REST_URL }}" > .env
             echo "UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }}" >> .env
