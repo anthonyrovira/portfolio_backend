@@ -1,7 +1,7 @@
 services:
   backend:
     container_name: portfolio-backend
-    image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+    image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:local
     build:
       context: .
       dockerfile: Dockerfile

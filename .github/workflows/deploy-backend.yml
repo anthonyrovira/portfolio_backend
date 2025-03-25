@@ -42,7 +42,8 @@ jobs:
           ECR_REPOSITORY: portfolio-backend
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker-compose build --build-arg IMAGE_TAG=$IMAGE_TAG
+          docker-compose build --no-cache
+          docker tag portfolio-backend:local ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Deploy to EC2
