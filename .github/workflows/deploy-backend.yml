@@ -78,7 +78,7 @@ jobs:
             echo "FIREBASE_MEASUREMENT_ID=${{ secrets.FIREBASE_MEASUREMENT_ID }}" >> .env
             echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> .env
             echo "RESEND_FROM_EMAIL=${{ secrets.RESEND_FROM_EMAIL }}" >> .env
-            echo "ALLOWED_ORIGIN"=${{ secrets.ALLOWED_ORIGIN }}" >> .env
+            echo "ALLOWED_ORIGIN=${{ secrets.ALLOWED_ORIGIN }}" >> .env
             echo "ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}" >> .env
             echo "ECR_REPOSITORY=portfolio-backend" >> .env
             echo "IMAGE_TAG=${{ github.sha }}" >> .env
