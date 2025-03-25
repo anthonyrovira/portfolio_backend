@@ -26,11 +26,5 @@ RUN npm install --omit=dev
 # Copy built files from builder
 COPY --from=builder /app/backend/dist ./dist
 
-# Set environment variables
-ENV NODE_ENV=production
-
-# Expose port
-EXPOSE 3000
-
 # Start the application
 CMD ["npm", "start"]

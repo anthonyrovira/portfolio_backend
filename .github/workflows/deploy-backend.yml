@@ -70,9 +70,8 @@ jobs:
 
             docker-compose down || true
 
-            curl -o Dockerfile https://raw.githubusercontent.com/anthonyrovira/portfolio_backend/main/Dockerfile
-            curl -o docker-compose.yml https://raw.githubusercontent.com/anthonyrovira/portfolio_backend/main/docker-compose.yml
+            git clone https://github.com/anthonyrovira/portfolio_backend.git .
 
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-            docker-compose up -d
+            docker-compose up -d --no-build
