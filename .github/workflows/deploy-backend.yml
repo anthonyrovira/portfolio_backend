@@ -50,15 +50,17 @@ jobs:
         uses: appleboy/ssh-action@v1.1.0
         env:
           ecr_registry: ${{ steps.login-ecr.outputs.registry }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: ecr_registry
+          envs: ecr_registry, DOCKER_USERNAME, DOCKER_PASSWORD
           script: |
             cd /home/ubuntu/app || exit
 
-            docker login -u AWS -p $(aws ecr get-login-password --region $REGION) $ecr_registry
+            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
             docker-compose down || true
 
