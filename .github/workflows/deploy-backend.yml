@@ -43,6 +43,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker-compose build --no-cache
+          docker tag portfolio-backend:latest $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Deploy to EC2
