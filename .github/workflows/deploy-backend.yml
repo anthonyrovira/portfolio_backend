@@ -47,7 +47,7 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.1.0
+        uses: appleboy/ssh-action@v1.2.2
         env:
           ecr_registry: ${{ steps.login-ecr.outputs.registry }}
           region: ${{ secrets.AWS_REGION }}
