@@ -58,6 +58,13 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           envs: ecr_registry, DOCKER_USERNAME, DOCKER_PASSWORD
           script: |
+            if [ -d "/home/ubuntu/app" ]; then
+              rm -rf /home/ubuntu/app/*
+            else
+              mkdir -p /home/ubuntu/app
+              chown -R ubuntu:ubuntu /home/ubuntu/app
+            fi
+
             cd /home/ubuntu/app || exit
 
             echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
