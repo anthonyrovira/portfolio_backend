@@ -25,7 +25,7 @@ app.use(
   "/api/*",
   cors({
     origin: env.ALLOWED_ORIGIN,
-    allowMethods: ["POST", "GET"],
+    allowMethods: ["GET", "POST"],
   })
 );
 

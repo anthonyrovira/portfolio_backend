@@ -18,7 +18,11 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_URL: z.string().url(),
   UPSTASH_REDIS_REST_TOKEN: z.string(),
 
-  ALLOWED_ORIGIN: z.string().url(),
+  ALLOWED_ORIGIN: z
+    .string()
+    .default("http://localhost:5173")
+    .transform((str) => str.split(","))
+    .pipe(z.array(z.string().url())),
 });
 
 export const env = envSchema.parse(process.env);
