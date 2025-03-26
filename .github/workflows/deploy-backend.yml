@@ -74,14 +74,18 @@ jobs:
           script: |
             cd /home/ubuntu/app
 
+            # Cleanup previous deployment
+            pm2 delete anthonyrovira-backend || true
+
             # Install production dependencies
             echo "Installing dependencies..."
             pnpm install --frozen-lockfile --prod
 
-            # Restart the service with pm2
-            echo "Restarting service..."
-            pm2 restart dist/index.js --name "anthonyrovira-backend" --update-env || pm2 start dist/index.js --name "anthonyrovira-backend"
+            # Start the service with pm2
+            echo "Starting service..."
+            pm2 start ./dist/index.js --name "anthonyrovira-backend" -i max
 
             # Save the configuration
             echo "Saving PM2 configuration..."
+            sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ubuntu --hp /home/ubuntu
             pm2 save
