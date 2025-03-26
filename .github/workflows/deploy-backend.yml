@@ -55,6 +55,16 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Copy files to EC2
+        uses: appleboy/scp-action@v0.1.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "dist/,package.json,pnpm-lock.yaml"
+          target: "/home/ubuntu/app"
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.2.2
         with:
@@ -63,10 +73,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/app
-
-            # Copy build files
-            rm -rf dist package* pnpm*
-            scp -r -o StrictHostKeyChecking=no $GITHUB_WORKSPACE/{dist,package.json,pnpm-lock.yaml} .
 
             # Install production dependencies
             pnpm install --frozen-lockfile --prod
