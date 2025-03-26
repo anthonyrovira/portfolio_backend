@@ -75,8 +75,13 @@ jobs:
             cd /home/ubuntu/app
 
             # Install production dependencies
+            echo "Installing dependencies..."
             pnpm install --frozen-lockfile --prod
 
             # Restart the service with pm2
-            pm2 delete portfolio-backend || true
-            pm2 start dist/index.js --name portfolio-backend
+            echo "Restarting service..."
+            pm2 restart dist/index.js --name "anthonyrovira-backend" --update-env || pm2 start dist/index.js --name "anthonyrovira-backend"
+
+            # Save the configuration
+            echo "Saving PM2 configuration..."
+            pm2 save
