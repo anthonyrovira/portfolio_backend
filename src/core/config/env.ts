@@ -1,5 +1,10 @@
 import { z } from "zod";
-import "dotenv/config";
+import * as dotenv from "dotenv";
+import path from "path";
+
+dotenv.config({
+  path: path.resolve(process.cwd(), ".env"),
+});
 
 const envSchema = z.object({
   API_SECRET: z.string().min(32).optional(),
