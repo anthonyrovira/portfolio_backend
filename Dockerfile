@@ -2,9 +2,9 @@
 FROM node:20-alpine AS builder
 
 # Copy package files
-COPY . /app/backend
+COPY . /app
 
-WORKDIR /app/backend
+WORKDIR /app
 
 # Install dependencies
 RUN npm install
@@ -15,7 +15,7 @@ RUN npm run build
 # Production stage
 FROM node:20-alpine AS production
 
-WORKDIR /app/backend
+WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
@@ -24,7 +24,7 @@ COPY package*.json ./
 RUN npm install --omit=dev
 
 # Copy built files from builder
-COPY --from=builder /app/backend/dist ./dist
+COPY --from=builder /app/dist ./dist
 
 # Start the application
 CMD ["npm", "start"]
