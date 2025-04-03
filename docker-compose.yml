@@ -1,20 +1,57 @@
 services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - --configFile=/traefik.yml
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+      - ./traefik.yml:/traefik.yml
+    networks:
+      - traefik_network
+    labels:
+      - traefik.http.middlewares.security-headers.headers.stsincludesubdomains=true
+      - traefik.http.middlewares.security-headers.headers.stspreload=true
+      - traefik.http.middlewares.security-headers.headers.stsseconds=31536000
+      - traefik.http.middlewares.security-headers.headers.contentsecuritypolicy=default-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline';
+      - traefik.http.middlewares.security-headers.headers.customresponseheaders.X-Content-Type-Options=nosniff
+      - traefik.http.middlewares.security-headers.headers.customresponseheaders.X-Frame-Options=DENY
+      - traefik.http.middlewares.security-headers.headers.customresponseheaders.X-XSS-Protection=1; mode=block
+      - traefik.http.middlewares.ratelimit.ratelimit.average=100
+      - traefik.http.middlewares.ratelimit.ratelimit.burst=50
+    restart: unless-stopped
+
   backend:
     container_name: portfolio-backend
     image: hysteria9/portfolio-backend:${IMAGE_TAG}
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
     environment:
       - NODE_ENV=production
     env_file:
       - .env
+    networks:
+      - traefik_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=Host(`api.anthonyrovira.com`)
+      - traefik.http.routers.backend.entrypoints=websecure
+      - traefik.http.routers.backend.tls.certresolver=myresolver
+      - traefik.http.routers.backend.middlewares=security-headers,ratelimit
+      - traefik.http.services.backend.loadbalancer.server.port=3000
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "--spider", "http://api.anthonyrovira.com/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
+networks:
+  traefik_network:
+    driver: bridge
