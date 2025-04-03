@@ -39,4 +39,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: hysteria9/portfolio-backend:${{ github.sha }}
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/portfolio-backend:lastest
