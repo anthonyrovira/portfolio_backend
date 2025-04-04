@@ -39,4 +39,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/portfolio-backend:latest
+          tags: |
+            ${{ vars.DOCKERHUB_USERNAME }}/portfolio-backend:latest
+            ${{ vars.DOCKERHUB_USERNAME }}/portfolio-backend:${{ github.sha }}
