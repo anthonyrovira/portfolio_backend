@@ -18,7 +18,7 @@ const app = new Hono({
 });
 
 // Apply security headers globally
-app.use("*", securityHeaders);
+app.use(securityHeaders);
 
 // CORS Middleware
 app.use(
@@ -43,14 +43,22 @@ const messageService = new MessageService(db, emailService);
 const messageController = new MessageController(messageService);
 
 // Main routes
-app.post("/api/messages", ratelimit({ limit: 5, timeframe: "1h" }), zValidator("json", contactSchema), (c) =>
-  messageController.createMessage(c)
+app.post(
+  "/api/messages",
+  ratelimit({ limit: 5, timeframe: "1h" }),
+  zValidator("json", contactSchema, (result, c) => {
+    if (!result.success) {
+      console.error(result.error.issues);
+      return c.json({ errors: result.error.issues }, 400);
+    }
+  }),
+  (c) => messageController.createMessage(c)
 );
 
 app.get("/api/messages", (c) => messageController.getMessages(c));
 
 // Email test route
-app.post("/api/test/email", (c) => emailController.testEmail(c));
+app.post("/api/test/email", ratelimit({ limit: 5, timeframe: "1h" }), (c) => emailController.testEmail(c));
 
 app.get("/health", (c) => {
   return c.json({ status: "OK" }, 200);
@@ -61,9 +69,6 @@ app.onError((err, c) => {
   console.error(err);
   return c.json({ error: "Internal error" }, 500);
 });
-
-// Static Server (optional)
-app.use("/*", serveStatic({ root: "./public" }));
 
 serve(app, (info) => {
   console.log(`Server running on port ${info.port}`);
