@@ -1,7 +1,5 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { serve } from "@hono/node-server";
-import { serveStatic } from "@hono/node-server/serve-static";
 import { zValidator } from "@hono/zod-validator";
 import { cors } from "hono/cors";
 import { securityHeaders } from "./shared/middleware/security.js";
@@ -13,7 +11,7 @@ import { MessageController } from "./features/messages/message.controller.js";
 import { EmailController } from "./features/emails/email.controller.js";
 import { env } from "./core/config/env.js";
 
-const app = new Hono({
+export const app = new Hono({
   strict: false,
 });
 
@@ -42,7 +40,7 @@ const emailController = new EmailController(emailService);
 const messageService = new MessageService(db, emailService);
 const messageController = new MessageController(messageService);
 
-// Main routes
+// Post Messages
 app.post(
   "/messages",
   ratelimit({ limit: 5, timeframe: "1h" }),
@@ -55,11 +53,13 @@ app.post(
   (c) => messageController.createMessage(c)
 );
 
+// Get Messages
 app.get("/messages", (c) => messageController.getMessages(c));
 
 // Email test route
 app.post("/test/email", ratelimit({ limit: 5, timeframe: "1h" }), (c) => emailController.testEmail(c));
 
+// Health check route
 app.get("/health", (c) => {
   return c.json({ status: "OK" }, 200);
 });
@@ -68,8 +68,4 @@ app.get("/health", (c) => {
 app.onError((err, c) => {
   console.error(err);
   return c.json({ error: "Internal error" }, 500);
-});
-
-serve(app, (info) => {
-  console.log(`Server running on port ${info.port}`);
 });
