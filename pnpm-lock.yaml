@@ -37,7 +37,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       resend:
         specifier: ^4.1.2
-        version: 4.1.2(react-dom@18.3.1)(react@18.3.1)
+        version: 4.1.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       zod:
         specifier: ^3.24.2
         version: 3.24.2
@@ -1322,7 +1322,7 @@ snapshots:
 
   '@protobufjs/utf8@1.1.0': {}
 
-  '@react-email/render@1.0.1(react-dom@18.3.1)(react@18.3.1)':
+  '@react-email/render@1.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       html-to-text: 9.0.5
       js-beautify: 1.15.4
@@ -1659,9 +1659,9 @@ snapshots:
 
   require-directory@2.1.1: {}
 
-  resend@4.1.2(react-dom@18.3.1)(react@18.3.1):
+  resend@4.1.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      '@react-email/render': 1.0.1(react-dom@18.3.1)(react@18.3.1)
+      '@react-email/render': 1.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - react
       - react-dom

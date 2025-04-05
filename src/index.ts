@@ -22,7 +22,6 @@ app.use(securityHeaders);
 
 // CORS Middleware
 app.use(
-  "/api/*",
   cors({
     origin: env.ALLOWED_ORIGIN,
     allowMethods: ["GET", "POST", "OPTIONS"],
@@ -45,7 +44,7 @@ const messageController = new MessageController(messageService);
 
 // Main routes
 app.post(
-  "/api/messages",
+  "/messages",
   ratelimit({ limit: 5, timeframe: "1h" }),
   zValidator("json", contactSchema, (result, c) => {
     if (!result.success) {
@@ -56,10 +55,10 @@ app.post(
   (c) => messageController.createMessage(c)
 );
 
-app.get("/api/messages", (c) => messageController.getMessages(c));
+app.get("/messages", (c) => messageController.getMessages(c));
 
 // Email test route
-app.post("/api/test/email", ratelimit({ limit: 5, timeframe: "1h" }), (c) => emailController.testEmail(c));
+app.post("/test/email", ratelimit({ limit: 5, timeframe: "1h" }), (c) => emailController.testEmail(c));
 
 app.get("/health", (c) => {
   return c.json({ status: "OK" }, 200);
