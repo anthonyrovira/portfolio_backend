@@ -25,7 +25,8 @@ jobs:
           version: 8.15.4
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install
+
       - name: Run unit tests
         run: pnpm test
 
