@@ -1,3 +1,5 @@
+[![Deploy Backend](https://github.com/anthonyrovira/portfolio_backend/actions/workflows/deploy-backend.yml/badge.svg)](https://github.com/anthonyrovira/portfolio_backend/actions/workflows/deploy-backend.yml)
+
 # Anthony Rovira - Portfolio Backend
 
 A modern, secure, and scalable backend API built with Hono.js, TypeScript, and Firebase.
