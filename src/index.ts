@@ -34,7 +34,7 @@ app.use(
   cors({
     origin: env.ALLOWED_ORIGIN,
     allowMethods: ["GET", "POST", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Internal-Secret"],
   })
 );
 
