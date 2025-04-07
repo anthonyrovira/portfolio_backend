@@ -26,7 +26,7 @@ Create a `.env` file in the root directory with the following variables:
 
 ```env
 # API Security
-API_SECRET=your_secure_secret_here
+API_INTERNAL=your_secure_secret_here
 
 # Firebase Configuration
 FIREBASE_API_KEY=your_firebase_api_key

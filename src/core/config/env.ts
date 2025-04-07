@@ -14,8 +14,6 @@ dotenv.config({
 });
 
 const envSchema = z.object({
-  API_SECRET: z.string().min(32).optional(),
-
   FIREBASE_API_KEY: z.string(),
   FIREBASE_AUTH_DOMAIN: z.string(),
   FIREBASE_PROJECT_ID: z.string(),
@@ -32,7 +30,7 @@ const envSchema = z.object({
 
   ALLOWED_ORIGIN: z.string().url(),
 
-  API_INTERNAL: z.string(),
+  API_INTERNAL: z.string().min(32),
 });
 
 export const env = envSchema.parse(process.env);
