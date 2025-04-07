@@ -12,6 +12,7 @@ import { EmailController } from "./features/emails/email.controller.js";
 import { env } from "./core/config/env.js";
 import { prometheus } from "@hono/prometheus";
 import { collectDefaultMetrics } from "prom-client";
+import { requireInternalSecret } from "./shared/middleware/auth.middleware.js";
 
 // Configure default metrics collection
 collectDefaultMetrics();
@@ -53,6 +54,7 @@ const messageController = new MessageController(messageService);
 // Post Messages
 app.post(
   "/messages",
+  requireInternalSecret,
   ratelimit({ limit: 5, timeframe: "1h" }),
   zValidator("json", contactSchema, (result, c) => {
     if (!result.success) {
@@ -64,7 +66,7 @@ app.post(
 );
 
 // Get Messages
-app.get("/messages", (c) => messageController.getMessages(c));
+app.get("/messages", requireInternalSecret, (c) => messageController.getMessages(c));
 
 // Email test route
 app.post("/test/email", ratelimit({ limit: 5, timeframe: "1h" }), (c) => emailController.testEmail(c));

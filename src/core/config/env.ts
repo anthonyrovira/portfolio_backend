@@ -31,6 +31,10 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_TOKEN: z.string(),
 
   ALLOWED_ORIGIN: z.string().url(),
+
+  API_INTERNAL: z.string(),
+
+  NODE_ENV: z.enum(["development", "production"]).default("development"),
 });
 
 export const env = envSchema.parse(process.env);
