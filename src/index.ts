@@ -10,10 +10,21 @@ import { EmailService } from "./features/emails/email.service.js";
 import { MessageController } from "./features/messages/message.controller.js";
 import { EmailController } from "./features/emails/email.controller.js";
 import { env } from "./core/config/env.js";
+import { prometheus } from "@hono/prometheus";
+import { collectDefaultMetrics } from "prom-client";
+import { metricsMiddleware } from "./shared/middleware/metrics.middleware.js";
+
+// Configure default metrics collection
+collectDefaultMetrics();
 
 export const app = new Hono({
   strict: false,
 });
+
+// Register Prometheus middleware
+const { printMetrics, registerMetrics } = prometheus();
+app.use("*", registerMetrics);
+app.get("/metrics", printMetrics);
 
 // Apply security headers globally
 app.use(securityHeaders);
@@ -26,6 +37,9 @@ app.use(
     allowHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Apply metrics middleware
+app.use("*", metricsMiddleware);
 
 // Zod validation schema
 const contactSchema = z.object({

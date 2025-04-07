@@ -3,6 +3,7 @@ import type { ContactForm } from "../messages/message.types.js";
 import { MessageNotification } from "./templates/MessageNotification.js";
 import { env } from "../../core/config/env.js";
 import { renderToString } from "react-dom/server";
+import { emailSendCounter } from "../../shared/metrics/custom-metrics.js";
 
 export class EmailService {
   private resend: Resend;
@@ -12,14 +13,21 @@ export class EmailService {
   }
 
   async sendNotificationEmail(data: ContactForm, messageId: string) {
-    const html = renderToString(MessageNotification({ data, messageId }));
+    try {
+      const html = renderToString(MessageNotification({ data, messageId }));
 
-    await this.resend.emails.send({
-      from: `Portfolio Contact <${env.RESEND_FROM_EMAIL}>`,
-      to: "anthonyrov@gmail.com",
-      subject: `New message from ${data.name} [${messageId}]`,
-      html,
-    });
+      await this.resend.emails.send({
+        from: `Portfolio Contact <${env.RESEND_FROM_EMAIL}>`,
+        to: "anthonyrov@gmail.com",
+        subject: `New message from ${data.name} [${messageId}]`,
+        html,
+      });
+
+      emailSendCounter.inc({ status: "success" });
+    } catch (error) {
+      emailSendCounter.inc({ status: "error" });
+      return { success: false, message: "Failed to send test email" };
+    }
   }
 
   async testEmailService(): Promise<{ success: boolean; message: string }> {
