@@ -12,7 +12,6 @@ import { EmailController } from "./features/emails/email.controller.js";
 import { env } from "./core/config/env.js";
 import { prometheus } from "@hono/prometheus";
 import { collectDefaultMetrics } from "prom-client";
-import { metricsMiddleware } from "./shared/middleware/metrics.middleware.js";
 
 // Configure default metrics collection
 collectDefaultMetrics();
@@ -37,9 +36,6 @@ app.use(
     allowHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-// Apply metrics middleware
-app.use("*", metricsMiddleware);
 
 // Zod validation schema
 const contactSchema = z.object({
