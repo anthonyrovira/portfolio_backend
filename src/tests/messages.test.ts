@@ -1,11 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { app } from "../index.js";
+import { env } from "../core/config/env.js";
 
 describe("Messages API", () => {
   it("should get all messages successfully", async () => {
     const res = await app.request("/messages", {
       method: "GET",
-      headers: new Headers({ "Content-Type": "application/json" }),
+      headers: new Headers({ "Content-Type": "application/json", "X-Internal-Secret": env.API_INTERNAL }),
     });
 
     expect(res.status).toBe(200);
@@ -19,5 +20,14 @@ describe("Messages API", () => {
       expect(firstMessage).toHaveProperty("email");
       expect(firstMessage).toHaveProperty("message");
     }
+  });
+
+  it("shouldn't get all messages successfully", async () => {
+    const res = await app.request("/messages", {
+      method: "GET",
+      headers: new Headers({ "Content-Type": "application/json" }),
+    });
+
+    expect(res.status).toBe(403);
   });
 });
